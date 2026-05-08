@@ -295,21 +295,18 @@ const boundaryMsg  = document.getElementById('boundaryMsg');
 // =============================================================
 // Canvas geometry helpers
 // =============================================================
-// The logical number line runs from -10 to +10 m.
-// We map it to canvas pixel x-coordinates.
 const X_MIN = -10, X_MAX = 10;  // m
 
 function mToPixel(meterVal) {
   const cw = canvas.width;
-  const pad = 40; // px margin on each side for labels
+  const pad = 40;
   return pad + (meterVal - X_MIN) / (X_MAX - X_MIN) * (cw - 2 * pad);
 }
 
-const FIGURE_Y   = 118;  // baseline of figure on canvas (px)
-const V_ARROW_Y  = FIGURE_Y - 42; // vertical center for velocity arrow
-const A_ARROW_Y  = FIGURE_Y - 68; // vertical center for accel arrow
+const FIGURE_Y   = 118;
+const V_ARROW_Y  = FIGURE_Y - 42;
+const A_ARROW_Y  = FIGURE_Y - 68;
 
-// Scale: 2 m/s should fill ~1/4 of usable canvas width
 function speedToPixels(speed) {
   const usable = canvas.width - 80;
   return (Math.abs(speed) / 2) * (usable / 4);
@@ -318,11 +315,11 @@ function speedToPixels(speed) {
 // =============================================================
 // Colors
 // =============================================================
-const COLOR_X   = '#5b9cf6';
-const COLOR_V   = '#4ec994';
-const COLOR_A   = '#f4874b';
-const COLOR_DIM = '#8a90a8';
-const COLOR_BG  = '#111520';
+const COLOR_X    = '#5b9cf6';
+const COLOR_V    = '#4ec994';
+const COLOR_A    = '#f4874b';
+const COLOR_DIM  = '#8a90a8';
+const COLOR_BG   = '#111520';
 const COLOR_LINE = '#2c3252';
 const COLOR_ZERO = '#e8eaf0';
 
@@ -333,7 +330,6 @@ function render() {
   const cw = canvas.width;
   const ch = canvas.height;
 
-  // Background
   ctx.clearRect(0, 0, cw, ch);
   ctx.fillStyle = COLOR_BG;
   ctx.fillRect(0, 0, cw, ch);
@@ -347,7 +343,6 @@ function render() {
   ctx.lineTo(mToPixel(X_MAX), lineY);
   ctx.stroke();
 
-  // Tick marks and labels
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   for (let m = X_MIN; m <= X_MAX; m++) {
@@ -371,63 +366,55 @@ function render() {
     }
   }
 
-  // "m" unit label at right end
   ctx.fillStyle = COLOR_DIM;
   ctx.font = '10px Segoe UI, system-ui, sans-serif';
   ctx.textAlign = 'left';
   ctx.fillText('m', mToPixel(X_MAX) + 4, lineY - 4);
 
-  // --- Figure position ---
   const figPx = mToPixel(x);
 
   // --- Velocity arrow ---
   if (Math.abs(v) > 0.001) {
     const len = speedToPixels(v);
     const dir = v > 0 ? 1 : -1;
-    const ax0 = figPx;
     const ax1 = figPx + dir * len;
 
-    // Flash color if x was manually dragged
     let vColor = COLOR_V;
     if (vFlashFrames > 0) {
       const t = vFlashFrames / V_FLASH_DURATION;
       vColor = lerpColor(COLOR_V, '#ffffff', t * 0.7);
     }
 
-    drawArrow(ctx, ax0, V_ARROW_Y, ax1, V_ARROW_Y, vColor, 2.5);
+    drawArrow(ctx, figPx, V_ARROW_Y, ax1, V_ARROW_Y, vColor, 2.5);
 
-    // Label
     ctx.fillStyle = vColor;
     ctx.font = 'italic bold 12px Segoe UI, system-ui, sans-serif';
     ctx.textAlign = dir > 0 ? 'left' : 'right';
     ctx.textBaseline = 'middle';
-    const labelX = ax1 + dir * 6;
-    ctx.fillText(`v = ${v >= 0 ? '+' : ''}${v.toFixed(1)}`, labelX, V_ARROW_Y);
+    ctx.fillText(`v = ${v >= 0 ? '+' : ''}${v.toFixed(1)}`, ax1 + dir * 6, V_ARROW_Y);
   }
 
   // --- Acceleration arrow ---
   if (Math.abs(a) > 0.001) {
-    const len = speedToPixels(a);  // same scale; a ∈ {±1, ±2}
+    const len = speedToPixels(a);
     const dir = a > 0 ? 1 : -1;
-    const ax0 = figPx;
     const ax1 = figPx + dir * len;
 
-    drawArrow(ctx, ax0, A_ARROW_Y, ax1, A_ARROW_Y, COLOR_A, 2.5);
+    drawArrow(ctx, figPx, A_ARROW_Y, ax1, A_ARROW_Y, COLOR_A, 2.5);
 
     ctx.fillStyle = COLOR_A;
     ctx.font = 'italic bold 12px Segoe UI, system-ui, sans-serif';
     ctx.textAlign = dir > 0 ? 'left' : 'right';
     ctx.textBaseline = 'middle';
-    const labelX = ax1 + dir * 6;
-    ctx.fillText(`a = ${a >= 0 ? '+' : ''}${a.toFixed(0)}`, labelX, A_ARROW_Y);
+    ctx.fillText(`a = ${a >= 0 ? '+' : ''}${a.toFixed(0)}`, ax1 + dir * 6, A_ARROW_Y);
   }
 
-  // --- XKCD-style stick figure ---
+  // --- Stick figure ---
   drawFigure(ctx, figPx, FIGURE_Y);
 }
 
 // =============================================================
-// SVG-style arrow on canvas
+// Arrow helper
 // =============================================================
 function drawArrow(ctx, x0, y0, x1, y1, color, lineWidth) {
   const headLen = 9;
@@ -440,13 +427,11 @@ function drawArrow(ctx, x0, y0, x1, y1, color, lineWidth) {
   ctx.lineWidth   = lineWidth;
   ctx.lineCap     = 'round';
 
-  // Shaft
   ctx.beginPath();
   ctx.moveTo(x0, y0);
   ctx.lineTo(x1, y1);
   ctx.stroke();
 
-  // Arrowhead (filled triangle)
   ctx.beginPath();
   ctx.moveTo(x1, y1);
   ctx.lineTo(x1 - headLen * Math.cos(angle - headAngle),
@@ -460,17 +445,16 @@ function drawArrow(ctx, x0, y0, x1, y1, color, lineWidth) {
 }
 
 // =============================================================
-// XKCD-style stick figure (simple inline SVG drawn on canvas)
+// Stick figure
 // =============================================================
 function drawFigure(ctx, cx, baseY) {
-  const headR   = 9;
-  const torsoH  = 22;
-  const legLen  = 18;
-  const armLen  = 13;
-  const headTop = baseY - torsoH - legLen - headR * 2 - 2;
-  const headCY  = headTop + headR;
+  const headR    = 9;
+  const torsoH   = 22;
+  const legLen   = 18;
+  const armLen   = 13;
+  const headCY   = baseY - torsoH - legLen - headR - 2;
   const shoulderY = headCY + headR + 2;
-  const hipY    = shoulderY + torsoH;
+  const hipY     = shoulderY + torsoH;
 
   ctx.save();
   ctx.strokeStyle = '#d8dce8';
@@ -478,25 +462,21 @@ function drawFigure(ctx, cx, baseY) {
   ctx.lineCap     = 'round';
   ctx.lineJoin    = 'round';
 
-  // Head
   ctx.beginPath();
   ctx.arc(cx, headCY, headR, 0, Math.PI * 2);
   ctx.stroke();
 
-  // Torso
   ctx.beginPath();
   ctx.moveTo(cx, shoulderY);
   ctx.lineTo(cx, hipY);
   ctx.stroke();
 
-  // Arms (slightly bent outward)
   ctx.beginPath();
   ctx.moveTo(cx - armLen, shoulderY + 8);
   ctx.lineTo(cx, shoulderY + 4);
   ctx.lineTo(cx + armLen, shoulderY + 8);
   ctx.stroke();
 
-  // Legs (slightly apart)
   const footY = hipY + legLen;
   ctx.beginPath();
   ctx.moveTo(cx, hipY);
@@ -511,7 +491,7 @@ function drawFigure(ctx, cx, baseY) {
 }
 
 // =============================================================
-// Color lerp for flash effect
+// Color lerp for flash
 // =============================================================
 function lerpColor(hex0, hex1, t) {
   const parse = h => [
@@ -521,49 +501,39 @@ function lerpColor(hex0, hex1, t) {
   ];
   const [r0, g0, b0] = parse(hex0);
   const [r1, g1, b1] = parse(hex1);
-  const r = Math.round(r0 + (r1 - r0) * t);
-  const g = Math.round(g0 + (g1 - g0) * t);
-  const b = Math.round(b0 + (b1 - b0) * t);
-  return `rgb(${r},${g},${b})`;
+  return `rgb(${Math.round(r0+(r1-r0)*t)},${Math.round(g0+(g1-g0)*t)},${Math.round(b0+(b1-b0)*t)})`;
 }
 
 // =============================================================
-// Update readout labels and slider display values
+// Readouts
 // =============================================================
 function updateReadouts() {
   readX.textContent = `${x >= 0 ? '+' : ''}${x.toFixed(2)} m`;
   readV.textContent = `${v >= 0 ? '+' : ''}${v.toFixed(2)} m/s`;
   readA.textContent = `${a >= 0 ? '+' : ''}${a.toFixed(0)} m/s²`;
-
-  valX.textContent = `${x >= 0 ? '+' : ''}${x.toFixed(1)} m`;
-  valV.textContent = `${v >= 0 ? '+' : ''}${v.toFixed(1)} m/s`;
-  valA.textContent = `${a >= 0 ? '+' : ''}${a.toFixed(0)} m/s²`;
-
-  // Keep sliders in sync with physics state
+  valX.textContent  = `${x >= 0 ? '+' : ''}${x.toFixed(1)} m`;
+  valV.textContent  = `${v >= 0 ? '+' : ''}${v.toFixed(1)} m/s`;
+  valA.textContent  = `${a >= 0 ? '+' : ''}${a.toFixed(0)} m/s²`;
   sliderX.value = x;
   sliderV.value = v;
   sliderA.value = a;
 }
 
 // =============================================================
-// Physics update (called each animation frame)
+// Physics loop
 // =============================================================
 function physicsStep(timestamp) {
   if (lastTimestamp === null) lastTimestamp = timestamp;
-  const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.05); // cap at 50 ms
+  const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.05);
   lastTimestamp = timestamp;
 
-  // Read acceleration live from slider (allows mid-sim adjustments)
   a = parseFloat(sliderA.value);
-
   v += a * dt;
-  v = Math.max(-20, Math.min(20, v)); // soft clamp to prevent runaway
+  v = Math.max(-20, Math.min(20, v));
   x += v * dt;
 
-  // Decay flash
   if (vFlashFrames > 0) vFlashFrames--;
 
-  // Boundary check
   if (Math.abs(x) >= 10) {
     x = Math.sign(x) * 10;
     pauseSimulation();
@@ -596,44 +566,36 @@ function pauseSimulation() {
 }
 
 // =============================================================
-// Slider setup
+// Slider events
 // =============================================================
-
-// Position slider — manual override; flash v-arrow
 sliderX.addEventListener('input', () => {
   x = parseFloat(sliderX.value);
-  valX.textContent = `${x >= 0 ? '+' : ''}${x.toFixed(1)} m`;
+  valX.textContent  = `${x >= 0 ? '+' : ''}${x.toFixed(1)} m`;
   readX.textContent = `${x >= 0 ? '+' : ''}${x.toFixed(2)} m`;
-  vFlashFrames = V_FLASH_DURATION; // trigger flash
+  vFlashFrames = V_FLASH_DURATION;
   boundaryMsg.classList.remove('visible');
   render();
 });
 
-// Velocity slider — always live
 sliderV.addEventListener('input', () => {
   v = parseFloat(sliderV.value);
-  valV.textContent = `${v >= 0 ? '+' : ''}${v.toFixed(1)} m/s`;
+  valV.textContent  = `${v >= 0 ? '+' : ''}${v.toFixed(1)} m/s`;
   readV.textContent = `${v >= 0 ? '+' : ''}${v.toFixed(2)} m/s`;
   render();
 });
 
-// Acceleration slider — always live
 sliderA.addEventListener('input', () => {
   a = parseFloat(sliderA.value);
-  valA.textContent = `${a >= 0 ? '+' : ''}${a.toFixed(0)} m/s²`;
+  valA.textContent  = `${a >= 0 ? '+' : ''}${a.toFixed(0)} m/s²`;
   readA.textContent = `${a >= 0 ? '+' : ''}${a.toFixed(0)} m/s²`;
   if (!running) render();
 });
 
 // =============================================================
-// Button handlers
+// Buttons
 // =============================================================
 btnStartPause.addEventListener('click', () => {
-  if (running) {
-    pauseSimulation();
-  } else {
-    startSimulation();
-  }
+  running ? pauseSimulation() : startSimulation();
 });
 
 btnReset.addEventListener('click', () => {
@@ -646,7 +608,7 @@ btnReset.addEventListener('click', () => {
 });
 
 // =============================================================
-// Initial render
+// Init
 // =============================================================
 updateReadouts();
 render();
