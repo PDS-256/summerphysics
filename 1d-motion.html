@@ -356,16 +356,16 @@ function render() {
     const isMajor = (m % 5 === 0);
     const isZero  = (m === 0);
 
-    ctx.strokeStyle = isZero ? COLOR_ZERO : (isMajor ? '#4a5275' : COLOR_LINE);
-    ctx.lineWidth   = isZero ? 2.5 : (isMajor ? 1.5 : 1);
-    const tickH     = isZero ? 12 : (isMajor ? 9 : 5);
+    ctx.strokeStyle = isMajor ? '#6b72a0' : COLOR_LINE;
+    ctx.lineWidth   = isMajor ? 1.5 : 1;
+    const tickH     = isMajor ? 9 : 5;
     ctx.beginPath();
     ctx.moveTo(px, lineY - tickH);
     ctx.lineTo(px, lineY + tickH);
     ctx.stroke();
 
     if (isMajor || isZero) {
-      ctx.fillStyle = '#c4c8d8';
+      ctx.fillStyle = '#e0e2ec';
       ctx.font      = '13px Segoe UI, system-ui, sans-serif';
       ctx.fillText(String(m), px, lineY + tickH + 3);
     }
