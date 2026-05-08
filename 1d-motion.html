@@ -221,7 +221,7 @@
   <!-- Simulation canvas -->
   <div class="card">
     <canvas id="simCanvas" width="672" height="200"></canvas>
-    <div id="offFrameNote">The object has left the frame.</div>
+    <div id="offFrameNote">Stick figure guy has left the frame.</div>
 
     <!-- Numerical readout -->
     <div class="readout">
@@ -310,7 +310,7 @@ function pixelToM(px) {
   return X_MIN + (px - PAD) / (canvas.width - 2 * PAD) * (X_MAX - X_MIN);
 }
 
-const FIGURE_Y  = 118;
+const FIGURE_Y  = 106;
 const V_ARROW_Y = FIGURE_Y - 42;
 const A_ARROW_Y = FIGURE_Y - 68;
 
@@ -365,9 +365,8 @@ function render() {
     ctx.stroke();
 
     if (isMajor || isZero) {
-      ctx.fillStyle = isZero ? COLOR_ZERO : COLOR_DIM;
-      ctx.font      = isZero ? 'bold 11px Segoe UI, system-ui, sans-serif'
-                             : '10px Segoe UI, system-ui, sans-serif';
+      ctx.fillStyle = '#c4c8d8';
+      ctx.font      = '13px Segoe UI, system-ui, sans-serif';
       ctx.fillText(String(m), px, lineY + tickH + 3);
     }
   }
